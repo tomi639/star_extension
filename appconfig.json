@@ -1,0 +1,7 @@
+{
+    "name": "Starter...",
+    "provider": "tfo",
+    "description": "Lorem ipsum dolor sit amet...",
+    "version": "1.0.0",
+    "icon": "https://raw.githubusercontent.com/tomi639/js-test-extension/master/icon.png"
+}
