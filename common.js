@@ -64,13 +64,78 @@ const common = (() => {
             company: context.company
         };
     }
+    /**
+     * 
+     * @param {string} [udoMetaName] 
+     * @returns {Promise<{id:string, udoId: string, name: string, description:string}[]>}
+     */
+    async function fetchUdfMeta(udoMetaName) {
+        const response = await fetch(
+            'https://eu.fsm.cloud.sap/api/query/v1?' + new URLSearchParams({
+                ...await common.getSearchParams(),
+                dtos: 'UdfMeta.19;UdoMeta.9'
+            }), {
+            method: 'POST',
+            headers: await common.getHeaders(),
+            body: JSON.stringify({
+                query:
+                    `SELECT
+                        udf_meta.id AS id,
+                        udf_meta.description AS description,
+                        udf_meta.name AS name,
+                        udo_meta.id AS udoId
+                        FROM UdoMeta udo_meta
+                        JOIN UdfMeta udf_meta
+                        ON udf_meta.id IN udo_meta.udfMetas
+                        WHERE udo_meta.name = '${udoMetaName}'`
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`🚀🚀🚀 Failed to fetch UdfMeta, got status ${response.status} `);
+        }
+
+        return (await response.json()).data;
+    }
+
+    /**
+     * @param {string[]} [fieldNames]
+     * @returns {Promise<{ id: string, name: string, description: string }[]>}
+    */
+    async function fetchUdfMetaByFieldName(fieldNames) {
+        const response = await fetch(
+            'https://eu.fsm.cloud.sap/api/query/v1?' + new URLSearchParams({
+                ...await common.getSearchParams(),
+                dtos: 'UdfMeta.19',
+            }), {
+            method: 'POST',
+            headers: await common.getHeaders(),
+            body: JSON.stringify({
+                query:
+                    `SELECT
+                        udf_meta.id AS id,
+                        udf_meta.description AS description,
+                        udf_meta.name AS name
+                    FROM UdfMeta udf_meta
+                    WHERE udf_meta.name IN ('${fieldNames.join('\',\'')}')`
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`🚀🚀🚀 Failed to fetch UdfMeta, got status ${response.status}`);
+        }
+
+        return (await response.json()).data;
+    }
 
     return {
         setShellSdk,
         getShellSdk,
         getContext,
         getHeaders,
-        getSearchParams
+        getSearchParams,
+        fetchUdfMeta,
+        fetchUdfMetaByFieldName
     }
 
 })();
